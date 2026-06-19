@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archivio Laboratorio di Chimica</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .unlock-icon {
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: transform 0.2s;
+            user-select: none;
+        }
+
+        .unlock-icon:hover {
+            transform: scale(1.2);
+        }
+
+        .unlock-icon.unlocked {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg); }
+            75% { transform: rotate(10deg); }
+        }
+
+        .tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            background: #f5f5f5;
+            border: none;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: all 0.3s;
+            color: #666;
+        }
+
+        .tab:hover {
+            background: #e0e0e0;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .edit-mode-only {
+            display: none;
+        }
+
+        .edit-mode .edit-mode-only {
+            display: block;
+        }
+
+        .form-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+        }
+        
+         .form-group.edit-mode-only {
+    display: none;
+}
+
+.edit-mode .form-group.edit-mode-only {
+    display: grid;
+}
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: transform 0.2s;
+            margin: 10px 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn-delete {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .btn-edit {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        }
+
+        .btn-cancel {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            transition: background 0.3s;
+        }
+
+        th:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #653a8b 100%);
+        }
+
+        th.sortable::after {
+            content: ' ⇅';
+            opacity: 0.5;
+            font-size: 0.9em;
+        }
+
+        th.sort-asc::after {
+            content: ' ↑';
+            opacity: 1;
+        }
+
+        th.sort-desc::after {
+            content: ' ↓';
+            opacity: 1;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 0.9em;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px;
+            color: #999;
+            font-size: 1.2em;
+        }
+
+        .edit-mode-indicator {
+            background: #4caf50;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+
+        .edit-mode .edit-mode-indicator {
+            display: block;
+        }
+
+        .row-editing {
+            background: #fff3cd !important;
+        }
+
+        .loading-indicator {
+            background: #2196F3;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 10px 15px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 10px 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border 0.3s;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-bar .search-icon {
+            font-size: 1.2em;
+        }
+
+        .search-bar .search-count {
+            color: #666;
+            font-size: 0.9em;
+            white-space: nowrap;
+        }
+
+        .search-bar .btn-clear-search {
+            background: #ddd;
+            color: #333;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: background 0.2s;
+        }
+
+        .search-bar .btn-clear-search:hover {
+            background: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-indicator" id="loadingIndicator">
+        ⏳ Caricamento dati da Firebase...
+    </div>
+
+    <div class="container" id="mainContainer">
+        <div class="edit-mode-indicator">
+            🔓 MODALITÀ MODIFICA ATTIVA
+        </div>
+        
+        <div class="header">
+            <h1>
+                <span class="unlock-icon" id="unlockIcon" onclick="handleUnlock()">🧪</span>
+                Archivio Laboratorio di Chimica
+            </h1>
+            <p>Sistema di gestione inventario - Sincronizzato con Firebase</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('vetreria')">Elenco Vetreria</button>
+            <button class="tab" onclick="switchTab('reagenti')">Reagenti</button>
+            <button class="tab" onclick="switchTab('strumenti')">Strumenti Scientifici</button>
+        </div>
+
+        <div class="content">
+            <!-- SEZIONE VETRERIA -->
+            <div id="vetreria" class="section active">
+                <h2>Elenco Vetreria Laboratorio Chimica</h2>
+                <div class="form-group edit-mode-only">
+                    <div>
+                        <label>Nome</label>
+                        <input type="text" id="v_nome" placeholder="Nome vetreria">
+                    </div>
+                    <div>
+                        <label>Portata e Sensibilità</label>
+                        <input type="text" id="v_portata" placeholder="Es: 100ml ± 0.5ml">
+                    </div>
+                    <div>
+                        <label>Quantità</label>
+                        <input type="number" id="v_quantita" placeholder="Quantità">
+                    </div>
+                </div>
+                <div class="edit-mode-only">
+                    <button class="btn" id="v_addBtn" onclick="addVetreria()">➕ Aggiungi Vetreria</button>
+                    <button class="btn btn-cancel" id="v_cancelBtn" onclick="cancelEditVetreria()" style="display:none;">❌ Annulla Modifica</button>
+                </div>
+                
+                <div class="search-bar">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="search_vetreria" placeholder="Cerca in vetreria..." oninput="renderVetreria()">
+                    <span class="search-count" id="search_count_vetreria"></span>
+                    <button class="btn-clear-search" onclick="clearSearch('vetreria')">✖ Pulisci</button>
+                </div>
+
+                <table id="table_vetreria">
+                    <thead>
+                        <tr>
+                            <th class="sortable" onclick="sortTable('vetreria', 'nome')">Nome</th>
+                            <th class="sortable" onclick="sortTable('vetreria', 'portata')">Portata e Sensibilità</th>
+                            <th class="sortable" onclick="sortTable('vetreria', 'quantita')">Quantità</th>
+                            <th class="edit-mode-only">Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody_vetreria">
+                        <tr><td colspan="4" class="empty-state">Nessun elemento inserito</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- SEZIONE REAGENTI -->
+            <div id="reagenti" class="section">
+                <h2>Reagenti Laboratorio di Chimica</h2>
+                <div class="form-group edit-mode-only">
+                    <div>
+                        <label>Reagente</label>
+                        <input type="text" id="r_reagente" placeholder="Nome reagente">
+                    </div>
+                    <div>
+                        <label>N° Armadio</label>
+                        <input type="text" id="r_armadio" placeholder="Numero armadio">
+                    </div>
+                    <div>
+                        <label>Posizione Ripiano</label>
+                        <input type="text" id="r_ripiano" placeholder="Posizione">
+                    </div>
+                    <div>
+                        <label>Quantità Disponibile</label>
+                        <input type="text" id="r_disponibile" placeholder="Quantità">
+                    </div>
+                    <div>
+                        <label>Quantità Utilizzata</label>
+                        <input type="text" id="r_utilizzata" placeholder="Quantità">
+                    </div>
+                    <div>
+                        <label>Quantità Residua</label>
+                        <input type="text" id="r_residua" placeholder="Quantità">
+                    </div>
+                </div>
+                <div class="edit-mode-only">
+                    <button class="btn" id="r_addBtn" onclick="addReagente()">➕ Aggiungi Reagente</button>
+                    <button class="btn btn-cancel" id="r_cancelBtn" onclick="cancelEditReagente()" style="display:none;">❌ Annulla Modifica</button>
+                </div>
+                
+                <div class="search-bar">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="search_reagenti" placeholder="Cerca tra i reagenti..." oninput="renderReagenti()">
+                    <span class="search-count" id="search_count_reagenti"></span>
+                    <button class="btn-clear-search" onclick="clearSearch('reagenti')">✖ Pulisci</button>
+                </div>
+
+                <table id="table_reagenti">
+                    <thead>
+                        <tr>
+                            <th class="sortable" onclick="sortTable('reagenti', 'reagente')">Reagente</th>
+                            <th class="sortable" onclick="sortTable('reagenti', 'armadio')">N° Armadio</th>
+                            <th class="sortable" onclick="sortTable('reagenti', 'ripiano')">Posizione Ripiano</th>
+                            <th class="sortable" onclick="sortTable('reagenti', 'disponibile')">Quantità Disponibile</th>
+                            <th class="sortable" onclick="sortTable('reagenti', 'utilizzata')">Quantità Utilizzata</th>
+                            <th class="sortable" onclick="sortTable('reagenti', 'residua')">Quantità Residua</th>
+                            <th class="edit-mode-only">Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody_reagenti">
+                        <tr><td colspan="7" class="empty-state">Nessun elemento inserito</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- SEZIONE STRUMENTI -->
+            <div id="strumenti" class="section">
+                <h2>Strumenti Scientifici e Dispositivi Tecnici</h2>
+                <div class="form-group edit-mode-only">
+                    <div>
+                        <label>Nome</label>
+                        <input type="text" id="s_nome" placeholder="Nome strumento">
+                    </div>
+                    <div>
+                        <label>Quantità</label>
+                        <input type="number" id="s_quantita" placeholder="Quantità">
+                    </div>
+                    <div>
+                        <label>Armadio</label>
+                        <input type="text" id="s_armadio" placeholder="Armadio">
+                    </div>
+                    <div>
+                        <label>Posizione Ripiani</label>
+                        <input type="text" id="s_posizione" placeholder="Posizione">
+                    </div>
+                    <div>
+                        <label>Numero Inventario</label>
+                        <input type="text" id="s_inventario" placeholder="N. inventario">
+                    </div>
+                    <div>
+                        <label>Alimentazione</label>
+                        <input type="text" id="s_alimentazione" placeholder="Tipo alimentazione">
+                    </div>
+                </div>
+                <div class="edit-mode-only">
+                    <button class="btn" id="s_addBtn" onclick="addStrumento()">➕ Aggiungi Strumento</button>
+                    <button class="btn btn-cancel" id="s_cancelBtn" onclick="cancelEditStrumento()" style="display:none;">❌ Annulla Modifica</button>
+                </div>
+                
+                <div class="search-bar">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="search_strumenti" placeholder="Cerca tra gli strumenti..." oninput="renderStrumenti()">
+                    <span class="search-count" id="search_count_strumenti"></span>
+                    <button class="btn-clear-search" onclick="clearSearch('strumenti')">✖ Pulisci</button>
+                </div>
+
+                <table id="table_strumenti">
+                    <thead>
+                        <tr>
+                            <th class="sortable" onclick="sortTable('strumenti', 'nome')">Nome</th>
+                            <th class="sortable" onclick="sortTable('strumenti', 'quantita')">Quantità</th>
+                            <th class="sortable" onclick="sortTable('strumenti', 'armadio')">Armadio</th>
+                            <th class="sortable" onclick="sortTable('strumenti', 'posizione')">Posizione Ripiani</th>
+                            <th class="sortable" onclick="sortTable('strumenti', 'inventario')">Numero Inventario</th>
+                            <th class="sortable" onclick="sortTable('strumenti', 'alimentazione')">Alimentazione</th>
+                            <th class="edit-mode-only">Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody_strumenti">
+                        <tr><td colspan="7" class="empty-state">Nessun elemento inserito</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <script>
+        // Configurazione Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyD5A6S2xDeMDg3iuACnXS2D3oLdg4fg0bM",
+            authDomain: "tecservice-3a96c.firebaseapp.com",
+            databaseURL: "https://tecservice-3a96c-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "tecservice-3a96c",
+            storageBucket: "tecservice-3a96c.firebasestorage.app",
+            messagingSenderId: "1000342449719",
+            appId: "1:1000342449719:web:14f6a21204efbef6d2d9b2"
+        };
+
+        // Inizializza Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Dati in memoria
+        let vetreria = [];
+        let reagenti = [];
+        let strumenti = [];
+
+        // Sistema di sblocco
+        let clickCount = 0;
+        let clickTimeout;
+        let isEditMode = false;
+        let editingId = null;
+
+        // Sistema di ordinamento
+        const sortState = {
+            vetreria: { column: null, direction: 'asc' },
+            reagenti: { column: null, direction: 'asc' },
+            strumenti: { column: null, direction: 'asc' }
+        };
+
+        // Carica dati all'avvio
+        window.addEventListener('load', () => {
+            loadAllData();
+        });
+
+        // Funzioni Firebase
+        function loadAllData() {
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            loadingIndicator.style.display = 'block';
+
+            Promise.all([
+                loadVetreriaFromFirebase(),
+                loadReagentiFromFirebase(),
+                loadStrumentiFromFirebase()
+            ]).then(() => {
+                loadingIndicator.style.display = 'none';
+                console.log('Tutti i dati caricati da Firebase');
+            }).catch(error => {
+                loadingIndicator.style.display = 'none';
+                console.error('Errore nel caricamento:', error);
+                alert('Errore nel caricamento dei dati da Firebase');
+            });
+        }
+
+        function loadVetreriaFromFirebase() {
+            return new Promise((resolve, reject) => {
+                database.ref('vetreria').once('value')
+                    .then(snapshot => {
+                        vetreria = [];
+                        snapshot.forEach(child => {
+                            vetreria.push({...child.val(), id: child.key});
+                        });
+                        renderVetreria();
+                        resolve();
+                    })
+                    .catch(reject);
+            });
+        }
+
+        function loadReagentiFromFirebase() {
+            return new Promise((resolve, reject) => {
+                database.ref('reagenti').once('value')
+                    .then(snapshot => {
+                        reagenti = [];
+                        snapshot.forEach(child => {
+                            reagenti.push({...child.val(), id: child.key});
+                        });
+                        renderReagenti();
+                        resolve();
+                    })
+                    .catch(reject);
+            });
+        }
+
+        function loadStrumentiFromFirebase() {
+            return new Promise((resolve, reject) => {
+                database.ref('strumenti').once('value')
+                    .then(snapshot => {
+                        strumenti = [];
+                        snapshot.forEach(child => {
+                            strumenti.push({...child.val(), id: child.key});
+                        });
+                        renderStrumenti();
+                        resolve();
+                    })
+                    .catch(reject);
+            });
+        }
+
+        // FUNZIONE DI RICERCA/FILTRO GENERALE
+        function filterData(tableType, dataArray) {
+            const input = document.getElementById('search_' + tableType);
+            const term = input ? input.value.trim().toLowerCase() : '';
+            const countSpan = document.getElementById('search_count_' + tableType);
+
+            let filtered = dataArray;
+            if (term) {
+                filtered = dataArray.filter(item => {
+                    return Object.keys(item).some(key => {
+                        if (key === 'id') return false;
+                        const val = item[key];
+                        return val !== undefined && val !== null && String(val).toLowerCase().includes(term);
+                    });
+                });
+            }
+
+            if (countSpan) {
+                if (term) {
+                    countSpan.textContent = `${filtered.length} di ${dataArray.length} risultati`;
+                } else {
+                    countSpan.textContent = '';
+                }
+            }
+
+            return filtered;
+        }
+
+        function clearSearch(tableType) {
+            const input = document.getElementById('search_' + tableType);
+            if (input) input.value = '';
+
+            if (tableType === 'vetreria') renderVetreria();
+            else if (tableType === 'reagenti') renderReagenti();
+            else if (tableType === 'strumenti') renderStrumenti();
+        }
+
+        // FUNZIONE DI ORDINAMENTO GENERALE
+        function sortTable(tableType, column) {
+            const state = sortState[tableType];
+            
+            // Toggle direzione se stessa colonna, altrimenti reset ad asc
+            if (state.column === column) {
+                state.direction = state.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                state.column = column;
+                state.direction = 'asc';
+            }
+
+            // Ottieni array corretto
+            let dataArray;
+            if (tableType === 'vetreria') dataArray = vetreria;
+            else if (tableType === 'reagenti') dataArray = reagenti;
+            else if (tableType === 'strumenti') dataArray = strumenti;
+
+            // Ordina
+            dataArray.sort((a, b) => {
+                let valA = a[column] || '';
+                let valB = b[column] || '';
+
+                // Controlla se sono numeri
+                const numA = parseFloat(valA);
+                const numB = parseFloat(valB);
+                
+                if (!isNaN(numA) && !isNaN(numB)) {
+                    // Ordinamento numerico
+                    return state.direction === 'asc' ? numA - numB : numB - numA;
+                } else {
+                    // Ordinamento alfabetico
+                    valA = String(valA).toLowerCase();
+                    valB = String(valB).toLowerCase();
+                    
+                    if (state.direction === 'asc') {
+                        return valA.localeCompare(valB);
+                    } else {
+                        return valB.localeCompare(valA);
+                    }
+                }
+            });
+
+            // Aggiorna visualizzazione
+            if (tableType === 'vetreria') renderVetreria();
+            else if (tableType === 'reagenti') renderReagenti();
+            else if (tableType === 'strumenti') renderStrumenti();
+
+            // Aggiorna indicatori visivi
+            updateSortIndicators(tableType, column, state.direction);
+        }
+
+        function updateSortIndicators(tableType, column, direction) {
+            // Rimuovi tutte le classi di ordinamento
+            const tableId = `table_${tableType}`;
+            const headers = document.querySelectorAll(`#${tableId} th`);
+            
+            headers.forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+            });
+
+            // Aggiungi classe alla colonna ordinata
+            const columnMap = {
+                'vetreria': ['nome', 'portata', 'quantita'],
+                'reagenti': ['reagente', 'armadio', 'ripiano', 'disponibile', 'utilizzata', 'residua'],
+                'strumenti': ['nome', 'quantita', 'armadio', 'posizione', 'inventario', 'alimentazione']
+            };
+
+            const columnIndex = columnMap[tableType].indexOf(column);
+            if (columnIndex !== -1) {
+                const header = headers[columnIndex];
+                header.classList.add(direction === 'asc' ? 'sort-asc' : 'sort-desc');
+            }
+        }
+
+        function handleUnlock() {
+            clickCount++;
+            const icon = document.getElementById('unlockIcon');
+            icon.classList.add('unlocked');
+            
+            setTimeout(() => icon.classList.remove('unlocked'), 500);
+
+            clearTimeout(clickTimeout);
+            clickTimeout = setTimeout(() => {
+                clickCount = 0;
+            }, 2000);
+
+            if (clickCount === 5) {
+                toggleEditMode();
+                clickCount = 0;
+            }
+        }
+
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            const container = document.getElementById('mainContainer');
+            
+            if (isEditMode) {
+                container.classList.add('edit-mode');
+                alert('🔓 Modalità modifica attivata!');
+            } else {
+                container.classList.remove('edit-mode');
+                alert('🔒 Modalità lettura attivata!');
+                cancelEditVetreria();
+                cancelEditReagente();
+                cancelEditStrumento();
+            }
+            
+            // Ri-renderizza tutte le tabelle per mostrare/nascondere i pulsanti
+            renderVetreria();
+            renderReagenti();
+            renderStrumenti();
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        // VETRERIA
+        function addVetreria() {
+            const nome = document.getElementById('v_nome').value;
+            const portata = document.getElementById('v_portata').value;
+            const quantita = document.getElementById('v_quantita').value;
+
+            if (!nome || !portata || !quantita) {
+                alert('Compila tutti i campi!');
+                return;
+            }
+
+            const data = { nome, portata, quantita };
+
+            if (editingId !== null) {
+                database.ref('vetreria/' + editingId).update(data)
+                    .then(() => {
+                        const index = vetreria.findIndex(item => item.id === editingId);
+                        vetreria[index] = { ...data, id: editingId };
+                        cancelEditVetreria();
+                        renderVetreria();
+                    })
+                    .catch(error => {
+                        console.error('Errore aggiornamento:', error);
+                        alert('Errore nel salvataggio');
+                    });
+            } else {
+                const newRef = database.ref('vetreria').push();
+                newRef.set(data)
+                    .then(() => {
+                        vetreria.push({ ...data, id: newRef.key });
+                        renderVetreria();
+                    })
+                    .catch(error => {
+                        console.error('Errore aggiunta:', error);
+                        alert('Errore nel salvataggio');
+                    });
+            }
+
+            document.getElementById('v_nome').value = '';
+            document.getElementById('v_portata').value = '';
+            document.getElementById('v_quantita').value = '';
+        }
+
+        function editVetreria(id) {
+            const item = vetreria.find(v => v.id === id);
+            if (!item) return;
+
+            document.getElementById('v_nome').value = item.nome;
+            document.getElementById('v_portata').value = item.portata;
+            document.getElementById('v_quantita').value = item.quantita;
+
+            editingId = id;
+            document.getElementById('v_addBtn').textContent = '💾 Salva Modifiche';
+            document.getElementById('v_cancelBtn').style.display = 'inline-block';
+
+            document.querySelectorAll('#tbody_vetreria tr').forEach(row => {
+                row.classList.remove('row-editing');
+            });
+            event.target.closest('tr').classList.add('row-editing');
+        }
+
+        function cancelEditVetreria() {
+            editingId = null;
+            document.getElementById('v_nome').value = '';
+            document.getElementById('v_portata').value = '';
+            document.getElementById('v_quantita').value = '';
+            document.getElementById('v_addBtn').textContent = '➕ Aggiungi Vetreria';
+            document.getElementById('v_cancelBtn').style.display = 'none';
+            
+            document.querySelectorAll('#tbody_vetreria tr').forEach(row => {
+                row.classList.remove('row-editing');
+            });
+        }
+
+        function renderVetreria() {
+            const tbody = document.getElementById('tbody_vetreria');
+            const colspan = isEditMode ? '4' : '3';
+            const filtered = filterData('vetreria', vetreria);
+
+            if (filtered.length === 0) {
+                const msg = vetreria.length === 0 ? 'Nessun elemento inserito' : 'Nessun risultato trovato';
+                tbody.innerHTML = `<tr><td colspan="${colspan}" class="empty-state">${msg}</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(item => `
+                <tr>
+                    <td>${item.nome}</td>
+                    <td>${item.portata}</td>
+                    <td>${item.quantita}</td>
+                    ${isEditMode ? `<td class="action-btns">
+                        <button class="btn btn-small btn-edit" onclick="editVetreria('${item.id}')">✏️ Modifica</button>
+                        <button class="btn btn-small btn-delete" onclick="deleteVetreria('${item.id}')">🗑️ Elimina</button>
+                    </td>` : ''}
+                </tr>
+            `).join('');
+        }
+
+        function deleteVetreria(id) {
+            if (confirm('Sei sicuro di voler eliminare questo elemento?')) {
+                database.ref('vetreria/' + id).remove()
+                    .then(() => {
+                        vetreria = vetreria.filter(item => item.id !== id);
+                        if (editingId === id) cancelEditVetreria();
+                        renderVetreria();
+                    })
+                    .catch(error => {
+                        console.error('Errore eliminazione:', error);
+                        alert('Errore nell\'eliminazione');
+                    });
+            }
+        }
+
+        // REAGENTI
+        function addReagente() {
+            const reagente = document.getElementById('r_reagente').value;
+            const armadio = document.getElementById('r_armadio').value;
+            const ripiano = document.getElementById('r_ripiano').value;
+            const disponibile = document.getElementById('r_disponibile').value;
+            const utilizzata = document.getElementById('r_utilizzata').value;
+            const residua = document.getElementById('r_residua').value;
+
+            if (!reagente) {
+                alert('Inserisci almeno il nome del reagente!');
+                return;
+            }
+
+            const data = { reagente, armadio, ripiano, disponibile, utilizzata, residua };
+
+            if (editingId !== null) {
+                database.ref('reagenti/' + editingId).update(data)
+                    .then(() => {
+                        const index = reagenti.findIndex(item => item.id === editingId);
+                        reagenti[index] = { ...data, id: editingId };
+                        cancelEditReagente();
+                        renderReagenti();
+                    })
+                    .catch(error => {
+                        console.error('Errore aggiornamento:', error);
+                        alert('Errore nel salvataggio');
+                    });
+            } else {
+                const newRef = database.ref('reagenti').push();
+                newRef.set(data)
+                    .then(() => {
+                        reagenti.push({ ...data, id: newRef.key });
+                        renderReagenti();
+                    })
+                    .catch(error => {
+                        console.error('Errore aggiunta:', error);
+                        alert('Errore nel salvataggio');
+                    });
+            }
+            
+            document.getElementById('r_reagente').value = '';
+            document.getElementById('r_armadio').value = '';
+            document.getElementById('r_ripiano').value = '';
+            document.getElementById('r_disponibile').value = '';
+            document.getElementById('r_utilizzata').value = '';
+            document.getElementById('r_residua').value = '';
+        }
+
+        function editReagente(id) {
+            const item = reagenti.find(r => r.id === id);
+            if (!item) return;
+
+            document.getElementById('r_reagente').value = item.reagente;
+            document.getElementById('r_armadio').value = item.armadio;
+            document.getElementById('r_ripiano').value = item.ripiano;
+            document.getElementById('r_disponibile').value = item.disponibile;
+            document.getElementById('r_utilizzata').value = item.utilizzata;
+            document.getElementById('r_residua').value = item.residua;
+
+            editingId = id;
+            document.getElementById('r_addBtn').textContent = '💾 Salva Modifiche';
+            document.getElementById('r_cancelBtn').style.display = 'inline-block';
+
+            document.querySelectorAll('#tbody_reagenti tr').forEach(row => {
+                row.classList.remove('row-editing');
+            });
+            event.target.closest('tr').classList.add('row-editing');
+        }
+
+        function cancelEditReagente() {
+            editingId = null;
+            document.getElementById('r_reagente').value = '';
+            document.getElementById('r_armadio').value = '';
+            document.getElementById('r_ripiano').value = '';
+            document.getElementById('r_disponibile').value = '';
+            document.getElementById('r_utilizzata').value = '';
+            document.getElementById('r_residua').value = '';
+            document.getElementById('r_addBtn').textContent = '➕ Aggiungi Reagente';
+            document.getElementById('r_cancelBtn').style.display = 'none';
+
+            document.querySelectorAll('#tbody_reagenti tr').forEach(row => {
+                row.classList.remove('row-editing');
+            });
+        }
+
+        function renderReagenti() {
+            const tbody = document.getElementById('tbody_reagenti');
+            const colspan = isEditMode ? '7' : '6';
+            const filtered = filterData('reagenti', reagenti);
+
+            if (filtered.length === 0) {
+                const msg = reagenti.length === 0 ? 'Nessun elemento inserito' : 'Nessun risultato trovato';
+                tbody.innerHTML = `<tr><td colspan="${colspan}" class="empty-state">${msg}</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(item => `
+                <tr>
+                    <td>${item.reagente}</td>
+                    <td>${item.armadio}</td>
+                    <td>${item.ripiano}</td>
+                    <td>${item.disponibile}</td>
+                    <td>${item.utilizzata}</td>
+                    <td>${item.residua}</td>
+                    ${isEditMode ? `<td class="action-btns">
+                        <button class="btn btn-small btn-edit" onclick="editReagente('${item.id}')">✏️ Modifica</button>
+                        <button class="btn btn-small btn-delete" onclick="deleteReagente('${item.id}')">🗑️ Elimina</button>
+                    </td>` : ''}
+                </tr>
+            `).join('');
+        }
+
+        function deleteReagente(id) {
+            if (confirm('Sei sicuro di voler eliminare questo elemento?')) {
+                database.ref('reagenti/' + id).remove()
+                    .then(() => {
+                        reagenti = reagenti.filter(item => item.id !== id);
+                        if (editingId === id) cancelEditReagente();
+                        renderReagenti();
+                    })
+                    .catch(error => {
+                        console.error('Errore eliminazione:', error);
+                        alert('Errore nell\'eliminazione');
+                    });
+            }
+        }
+
+        // STRUMENTI
+        function addStrumento() {
+            const nome = document.getElementById('s_nome').value;
+            const quantita = document.getElementById('s_quantita').value;
+            const armadio = document.getElementById('s_armadio').value;
+            const posizione = document.getElementById('s_posizione').value;
+            const inventario = document.getElementById('s_inventario').value;
+            const alimentazione = document.getElementById('s_alimentazione').value;
+
+            if (!nome) {
+                alert('Inserisci almeno il nome dello strumento!');
+                return;
+            }
+
+            const data = { nome, quantita, armadio, posizione, inventario, alimentazione };
+
+            if (editingId !== null) {
+                database.ref('strumenti/' + editingId).update(data)
+                    .then(() => {
+                        const index = strumenti.findIndex(item => item.id === editingId);
+                        strumenti[index] = { ...data, id: editingId };
+                        cancelEditStrumento();
+                        renderStrumenti();
+                    })
+                    .catch(error => {
+                        console.error('Errore aggiornamento:', error);
+                        alert('Errore nel salvataggio');
+                    });
+            } else {
+                const newRef = database.ref('strumenti').push();
+                newRef.set(data)
+                    .then(() => {
+                        strumenti.push({ ...data, id: newRef.key });
+                        renderStrumenti();
+                    })
+                    .catch(error => {
+                        console.error('Errore aggiunta:', error);
+                        alert('Errore nel salvataggio');
+                    });
+            }
+            
+            document.getElementById('s_nome').value = '';
+            document.getElementById('s_quantita').value = '';
+            document.getElementById('s_armadio').value = '';
+            document.getElementById('s_posizione').value = '';
+            document.getElementById('s_inventario').value = '';
+            document.getElementById('s_alimentazione').value = '';
+        }
+
+        function editStrumento(id) {
+            const item = strumenti.find(s => s.id === id);
+            if (!item) return;
+
+            document.getElementById('s_nome').value = item.nome;
+            document.getElementById('s_quantita').value = item.quantita;
+            document.getElementById('s_armadio').value = item.armadio;
+            document.getElementById('s_posizione').value = item.posizione;
+            document.getElementById('s_inventario').value = item.inventario;
+            document.getElementById('s_alimentazione').value = item.alimentazione;
+
+            editingId = id;
+            document.getElementById('s_addBtn').textContent = '💾 Salva Modifiche';
+            document.getElementById('s_cancelBtn').style.display = 'inline-block';
+
+            document.querySelectorAll('#tbody_strumenti tr').forEach(row => {
+                row.classList.remove('row-editing');
+            });
+            event.target.closest('tr').classList.add('row-editing');
+        }
+
+        function cancelEditStrumento() {
+            editingId = null;
+            document.getElementById('s_nome').value = '';
+            document.getElementById('s_quantita').value = '';
+            document.getElementById('s_armadio').value = '';
+            document.getElementById('s_posizione').value = '';
+            document.getElementById('s_inventario').value = '';
+            document.getElementById('s_alimentazione').value = '';
+            document.getElementById('s_addBtn').textContent = '➕ Aggiungi Strumento';
+            document.getElementById('s_cancelBtn').style.display = 'none';
+
+            document.querySelectorAll('#tbody_strumenti tr').forEach(row => {
+                row.classList.remove('row-editing');
+            });
+        }
+
+        function renderStrumenti() {
+            const tbody = document.getElementById('tbody_strumenti');
+            const colspan = isEditMode ? '7' : '6';
+            const filtered = filterData('strumenti', strumenti);
+
+            if (filtered.length === 0) {
+                const msg = strumenti.length === 0 ? 'Nessun elemento inserito' : 'Nessun risultato trovato';
+                tbody.innerHTML = `<tr><td colspan="${colspan}" class="empty-state">${msg}</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(item => `
+                <tr>
+                    <td>${item.nome}</td>
+                    <td>${item.quantita}</td>
+                    <td>${item.armadio}</td>
+                    <td>${item.posizione}</td>
+                    <td>${item.inventario}</td>
+                    <td>${item.alimentazione}</td>
+                    ${isEditMode ? `<td class="action-btns">
+                        <button class="btn btn-small btn-edit" onclick="editStrumento('${item.id}')">✏️ Modifica</button>
+                        <button class="btn btn-small btn-delete" onclick="deleteStrumento('${item.id}')">🗑️ Elimina</button>
+                    </td>` : ''}
+                </tr>
+            `).join('');
+        }
+
+        function deleteStrumento(id) {
+            if (confirm('Sei sicuro di voler eliminare questo elemento?')) {
+                database.ref('strumenti/' + id).remove()
+                    .then(() => {
+                        strumenti = strumenti.filter(item => item.id !== id);
+                        if (editingId === id) cancelEditStrumento();
+                        renderStrumenti();
+                    })
+                    .catch(error => {
+                        console.error('Errore eliminazione:', error);
+                        alert('Errore nell\'eliminazione');
+                    });
+            }
+        }
+    </script>
+</body>
+</html>
